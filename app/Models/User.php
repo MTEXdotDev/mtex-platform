@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasUuids;
+    use HasFactory, Notifiable, HasUuids, LogsActivity;
 
     protected $fillable = [
         'name',
@@ -45,17 +47,35 @@ class User extends Authenticatable
     }
 
     /**
+     * Configure Activity Logging
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    /**
      * Get the user's avatar URL.
      */
     public function getDisplayableAvatar(): string
     {
-        /*if ($this->avatar_path && Storage::disk('public')->exists($this->avatar_path)) {
-            return Storage::url($this->avatar_path);
-        }*/
         if ($this->avatar_path) {
             return $this->avatar_path;
         }
 
         return "https://ui-avatars.com/api/?name=" . urlencode($this->name) . "&background=0D8ABC&color=fff";
+    }
+
+    /**
+     * The organizations that the user belongs to.
+     */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class)
+            ->withPivot('role')
+            ->withTimestamps();
     }
 }
