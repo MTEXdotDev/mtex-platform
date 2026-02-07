@@ -2,22 +2,16 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasUuids;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'username',
@@ -32,11 +26,6 @@ class User extends Authenticatable
         'is_admin',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -45,11 +34,6 @@ class User extends Authenticatable
         'recovery_codes',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -58,5 +42,20 @@ class User extends Authenticatable
             'is_admin' => 'boolean',
             'recovery_codes' => 'encrypted:array',
         ];
+    }
+
+    /**
+     * Get the user's avatar URL.
+     */
+    public function getDisplayableAvatar(): string
+    {
+        /*if ($this->avatar_path && Storage::disk('public')->exists($this->avatar_path)) {
+            return Storage::url($this->avatar_path);
+        }*/
+        if ($this->avatar_path) {
+            return $this->avatar_path;
+        }
+
+        return "https://ui-avatars.com/api/?name=" . urlencode($this->name) . "&background=0D8ABC&color=fff";
     }
 }
