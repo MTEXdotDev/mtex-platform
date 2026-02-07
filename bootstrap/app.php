@@ -17,21 +17,28 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             $isProduction = app()->environment('production');
 
-            $configureRoute = function ($name, $domain, $path) use ($isProduction) {
-                $middleware = $name === 'settings' ? ['web', 'auth'] : ['web'];
+            $configureRoute = function ($name, $domain, $path, $route_name = false) use ($isProduction) {
+                $middleware = match ($name) {
+                    'settings' => ['web', 'auth'],
+                    'go' => ['web'],
+                    default => ['web'],
+                };
+                
                 $route = Route::middleware($middleware);
 
                 if ($isProduction) {
                     $route->domain($domain);
                 } else {
                     $route->prefix($path);
+                    $route->name(($route_name ?: $name) . '.');
                 }
 
                 $route->group(base_path("routes/{$name}.php"));
             };
 
-            $configureRoute('auth', 'auth.mtex.dev', 'auth');
-            $configureRoute('settings', 'settings.mtex.dev', 'settings');
+            $configureRoute('auth', 'auth.mtex.dev', 'auth', false);
+            $configureRoute('settings', 'settings.mtex.dev', 'settings', false);
+            $configureRoute('go', 'go.mtex.dev', 'go', true);
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
