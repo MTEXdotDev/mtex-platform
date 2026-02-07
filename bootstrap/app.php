@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             $isProduction = app()->environment('production');
 
-            $configureRoute = function ($name, $domain, $path, $route_name = false) use ($isProduction) {
+            $configureRoute = function ($name, $domain, $path) use ($isProduction) {
                 $middleware = match ($name) {
                     'settings' => ['web', 'auth'],
                     'go' => ['web'],
@@ -30,20 +30,19 @@ return Application::configure(basePath: dirname(__DIR__))
                     $route->domain($domain);
                 } else {
                     $route->prefix($path);
-                    $route->name(($route_name ?: $name) . '.');
                 }
 
                 $route->group(base_path("routes/{$name}.php"));
             };
 
-            $configureRoute('auth', 'auth.mtex.dev', 'auth', false);
-            $configureRoute('settings', 'settings.mtex.dev', 'settings', false);
-            $configureRoute('go', 'go.mtex.dev', 'go', true);
+            $configureRoute('auth', 'auth.mtex.dev', 'auth');
+            $configureRoute('settings', 'settings.mtex.dev', 'settings');
+            $configureRoute('go', 'go.mtex.dev', 'go');
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
     })
-    ->withExceptions(function (Exceptions $exceptions) {
+    ->withExceptions(function (Exceptions $exceptions) {/*
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*') || $request->wantsJson()) {
                 return null;
@@ -89,5 +88,5 @@ return Application::configure(basePath: dirname(__DIR__))
                 'title' => $title,
                 'description' => $description,
             ], $statusCode);
-        });
+        });*/
     })->create();
