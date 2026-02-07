@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
+use Laravel\Socialite\Socialite;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -70,16 +72,40 @@ class AuthController extends Controller
         return redirect()->route('pages.home');
     }
 
-
+    /**
+     * Redirect the user to the GitHub authentication page.
+     */
     public function redirectToGithub(): RedirectResponse
     {
-        //return back()->with('error', 'GitHub login not configured yet.');
-        eturn Socialite::driver('github')->redirect();
+        return Socialite::driver('github')->redirect();
     }
 
+    /**
+     * Obtain the user information from GitHub.
+     */
     public function handleGithubCallback(): RedirectResponse
     {
-        // Logic for handling GitHub user data...
+        try {
+            $githubUser = Socialite::driver('github')->user();
+        } catch (\Exception $e) {
+            return redirect()->route('login')->with('error', 'GitHub authentication failed.');
+        }
+
+        $user = User::updateOrCreate(
+            ['github_id' => $githubUser->getId()],
+            [
+                'name' => $githubUser->getName() ?? $githubUser->getNickname(),
+                'username' => $githubUser->getNickname() ?? Str::slug($githubUser->getName()),
+                'email' => $githubUser->getEmail(),
+                'github_token' => $githubUser->token,
+                'github_refresh_token' => $githubUser->refreshToken,
+                'avatar_path' => $githubUser->getAvatar(),
+                'password' => null,
+            ]
+        );
+
+        Auth::login($user);
+
         return redirect()->route('pages.home');
     }
 }
