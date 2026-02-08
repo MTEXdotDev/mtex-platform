@@ -18,7 +18,34 @@
     </style>
     
     <script src="//unpkg.com/alpinejs" defer></script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @php
+        $manifestPath = public_path('build/manifest.json');
+        $isHot = file_exists(public_path('hot'));
+    @endphp
+
+    @if($isHot || file_exists($manifestPath))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            gray: {
+                                950: '#0a0a0a',
+                            }
+                        },
+                        fontFamily: {
+                            sans: ['Inter', 'sans-serif'],
+                            mono: ['Fira Code', 'monospace'],
+                        }
+                    }
+                }
+            }
+        </script>
+    @endif
 </head>
 <body class="min-h-screen flex flex-col bg-gray-950 text-gray-50">
     @yield('content')
