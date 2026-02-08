@@ -3,40 +3,28 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AccountController extends Controller
 {
     /**
-     * Show the user settings page.
+     * Show the account management page (Deletion / Danger Zone).
+     * Note: General profile settings are handled in ProfileController.
      */
-    public function index(Request $request): View
+    public function edit(Request $request): View
     {
-        return view('settings.index', [
+        return view('settings.account', [
             'user' => $request->user(),
         ]);
     }
 
     /**
-     * Update the user's profile information.
-     */
-    public function update(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            // Add other fields like avatar, timezone here
-        ]);
-
-        $request->user()->update($validated);
-
-        return back()->with('status', 'profile-updated');
-    }
-
-    /**
      * Delete the user's account.
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],

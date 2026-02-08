@@ -10,10 +10,11 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasUuids, LogsActivity, SoftDeletes;
+    use HasFactory, Notifiable, HasUuids, LogsActivity, SoftDeletes, HasApiTokens;
 
     protected $fillable = [
         'name',

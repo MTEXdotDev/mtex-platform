@@ -42,51 +42,53 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
     })
-    ->withExceptions(function (Exceptions $exceptions) {/*
-        $exceptions->render(function (Throwable $e, Request $request) {
-            if ($request->is('api/*') || $request->wantsJson()) {
-                return null;
-            }
-
-            $statusCode = 500;
-
-            if ($e instanceof HttpExceptionInterface) {
-                $statusCode = $e->getStatusCode();
-            } elseif ($e instanceof ModelNotFoundException) {
-                $statusCode = 404;
-            } elseif ($e instanceof NotFoundHttpException) {
-                $statusCode = 404;
-            }
-
-            try {
-                $titleKey = "errors.{$statusCode}.title";
-                $title = __($titleKey);
-                if ($title === $titleKey) {
-                    $title = __('errors.default.title');
+    ->withExceptions(function (Exceptions $exceptions) {
+        if(!config('app.debug')){
+            $exceptions->render(function (Throwable $e, Request $request) {
+                if ($request->is('api/*') || $request->wantsJson()) {
+                    return null;
                 }
 
-                $description = null;
+                $statusCode = 500;
 
-                if ($e instanceof HttpExceptionInterface && !empty($e->getMessage())) {
-                    $description = $e->getMessage();
+                if ($e instanceof HttpExceptionInterface) {
+                    $statusCode = $e->getStatusCode();
+                } elseif ($e instanceof ModelNotFoundException) {
+                    $statusCode = 404;
+                } elseif ($e instanceof NotFoundHttpException) {
+                    $statusCode = 404;
                 }
 
-                if (empty($description)) {
-                    $descKey = "errors.{$statusCode}.description";
-                    $description = __($descKey);
-                    if ($description === $descKey) {
-                        $description = __('errors.default.description');
+                try {
+                    $titleKey = "errors.{$statusCode}.title";
+                    $title = __($titleKey);
+                    if ($title === $titleKey) {
+                        $title = __('errors.default.title');
                     }
-                }
-            } catch (Throwable $t) {
-                $title = "Error " . $statusCode;
-                $description = "An unexpected error occurred.";
-            }
 
-            return response()->view('pages.errors', [
-                'error_code' => $statusCode,
-                'title' => $title,
-                'description' => $description,
-            ], $statusCode);
-        });*/
+                    $description = null;
+
+                    if ($e instanceof HttpExceptionInterface && !empty($e->getMessage())) {
+                        $description = $e->getMessage();
+                    }
+
+                    if (empty($description)) {
+                        $descKey = "errors.{$statusCode}.description";
+                        $description = __($descKey);
+                        if ($description === $descKey) {
+                            $description = __('errors.default.description');
+                        }
+                    }
+                } catch (Throwable $t) {
+                    $title = "Error " . $statusCode;
+                    $description = "An unexpected error occurred.";
+                }
+
+                return response()->view('pages.errors', [
+                    'error_code' => $statusCode,
+                    'title' => $title,
+                    'description' => $description,
+                ], $statusCode);
+            });
+        };
     })->create();
