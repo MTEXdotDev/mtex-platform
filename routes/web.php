@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 
+Route::view('/debug-auth', 'debug-auth')->name('debug.auth');
+
 $domain = app()->environment('production') ? 'mtex.dev' : null;
 
 Route::domain($domain)->group(function () {
